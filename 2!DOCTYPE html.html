@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0C0A08">
+  <title>Menu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold:      #C8A84B;
+      --gold-soft: #E2C87A;
+      --ink:       #0C0A08;
+      --ink2:      #141210;
+      --cream:     #F0EAE0;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html, body {
+      width:100%; height:100%; overflow:hidden;
+      font-family:'Tajawal',sans-serif; background:var(--ink);
+    }
+
+    /* ════════════════════════════════════════
+       LOADER
+    ════════════════════════════════════════ */
+    #loader {
+      position:fixed; inset:0; z-index:99999; background:var(--ink);
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px;
+      transition:opacity 1s ease, visibility 1s;
+    }
+    #loader.out { opacity:0; visibility:hidden; pointer-events:none; }
+    .ld-logo {
+      height:52px; max-width:55%; object-fit:contain; opacity:0;
+      animation:ldLogoIn .6s ease .1s forwards, ldBreathe 2.8s ease-in-out 1s infinite;
+    }
+    @keyframes ldLogoIn  { to{opacity:.4} }
+    @keyframes ldBreathe { 0%,100%{opacity:.25;filter:blur(1px)} 50%{opacity:.6;filter:blur(0)} }
+    .ld-rings { position:relative; width:54px; height:54px; }
+    .ld-rings span { position:absolute; inset:0; border-radius:50%; border:1.5px solid transparent; }
+    .ld-rings span:nth-child(1){ border-top-color:var(--gold);       animation:spin 1.0s linear infinite; }
+    .ld-rings span:nth-child(2){ border-right-color:var(--gold-soft); animation:spin 1.5s linear infinite reverse; inset:8px; }
+    .ld-rings span:nth-child(3){ border-bottom-color:var(--gold);     animation:spin 2.0s linear infinite; inset:16px; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .ld-bar-wrap { width:140px; height:1px; background:rgba(255,255,255,.07); border-radius:1px; overflow:hidden; }
+    .ld-bar {
+      height:100%; width:0%; border-radius:1px;
+      background:linear-gradient(90deg,var(--gold),var(--gold-soft),var(--gold));
+      background-size:200%; box-shadow:0 0 8px rgba(200,168,75,.7);
+      animation:shimmer 1.3s linear infinite; transition:width .25s ease;
+    }
+    @keyframes shimmer { to{background-position:-200% 0} }
+    .ld-pct { color:var(--gold); font-size:11px; letter-spacing:3px; opacity:.6; }
+
+    /* ════════════════════════════════════════
+       PAGE
+    ════════════════════════════════════════ */
+    #page {
+      position:fixed; inset:0; z-index:10;
+      display:flex; flex-direction:column; overflow:hidden;
+      opacity:0; transition:opacity .9s ease;
+      /* ✏️ 1 — صورة الخلفية */
+      background:var(--ink) url('https://i.postimg.cc/5NrMWmtk/66537218-8252-44ca-8e54-da2d692283c3.jpg') center/cover no-repeat;
+    }
+    #page.in { opacity:1; }
+
+    /* ════════════════════════════════════════
+       [إضافة 1] AMBIENT BREATHING BACKGROUND
+       خلفية تتنفس — نبضة ضوئية محيطية تشعر
+       بأن الصفحة حية مثل شاشات Apple Pro Display
+    ════════════════════════════════════════ */
+    .ambient-bg {
+      position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+    }
+    .ambient-orb {
+      position:absolute; border-radius:50%; filter:blur(70px);
+      opacity:0; transition:opacity 2s ease 1.2s;
+    }
+    .ambient-orb.in { opacity:1; }
+    .ambient-orb-1 {
+      width:60vw; height:40vw;
+      top:-10%; right:-15%;
+      background:radial-gradient(ellipse, rgba(200,168,75,.07) 0%, transparent 70%);
+      animation:orbFloat1 12s ease-in-out infinite alternate;
+    }
+    .ambient-orb-2 {
+      width:50vw; height:35vw;
+      bottom:-8%; left:-10%;
+      background:radial-gradient(ellipse, rgba(180,130,50,.06) 0%, transparent 70%);
+      animation:orbFloat2 15s ease-in-out infinite alternate;
+    }
+    .ambient-orb-3 {
+      width:30vw; height:25vw;
+      top:35%; left:35%;
+      background:radial-gradient(ellipse, rgba(210,180,90,.04) 0%, transparent 70%);
+      animation:orbFloat3 9s ease-in-out infinite alternate;
+    }
+    @keyframes orbFloat1 { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(-20px,15px) scale(1.1)} }
+    @keyframes orbFloat2 { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(15px,-20px) scale(1.08)} }
+    @keyframes orbFloat3 { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(-10px,10px) scale(1.15)} }
+
+    /* ════════════════════════════════════════
+       HEADER
+    ════════════════════════════════════════ */
+    .hdr {
+      flex-shrink:0; position:relative; z-index:100;
+      padding:14px 20px 18px;
+      background:linear-gradient(180deg,rgba(12,10,8,.97) 0%,rgba(12,10,8,.5) 75%,transparent 100%);
+      display:flex; align-items:center; justify-content:center;
+      transform:translateY(-16px); opacity:0;
+      transition:transform .7s cubic-bezier(.34,1.4,.64,1) .3s, opacity .6s ease .3s;
+    }
+    .hdr.in { transform:none; opacity:1; }
+
+    /* ✏️ 2 — اللوجو */
+    .hdr-logo {
+      height:44px; max-width:68%; object-fit:contain;
+      filter:drop-shadow(0 0 16px rgba(200,168,75,.4)) drop-shadow(0 2px 8px rgba(0,0,0,.9));
+      /* [إضافة 2] اللوجو يتنفس بتوهج خفي — مستوحى من Apple logo glow */
+      animation:logoGlow 4s ease-in-out infinite;
+    }
+    @keyframes logoGlow {
+      0%,100% { filter:drop-shadow(0 0 10px rgba(200,168,75,.3)) drop-shadow(0 2px 8px rgba(0,0,0,.9)); }
+      50%      { filter:drop-shadow(0 0 22px rgba(200,168,75,.6)) drop-shadow(0 2px 8px rgba(0,0,0,.9)); }
+    }
+
+    .gold-line {
+      flex-shrink:0; height:1px; position:relative; z-index:100;
+      background:linear-gradient(90deg,transparent,var(--gold) 25%,var(--gold-soft) 50%,var(--gold) 75%,transparent);
+      opacity:.28; margin:0 28px;
+    }
+
+    /* ════════════════════════════════════════
+       [إضافة 2] LIVE TICKER — شريط نابض أسفل الهيدر
+       مستوحى من Bloomberg / Apple Event live bar
+       يبدو وكأن الصفحة تبث مباشرة
+    ════════════════════════════════════════ */
+    .ticker-wrap {
+      flex-shrink:0; position:relative; z-index:99;
+      height:26px; overflow:hidden;
+      background:rgba(10,8,6,.6);
+      border-bottom:1px solid rgba(200,168,75,.1);
+      opacity:0; transform:scaleY(0); transform-origin:top;
+      transition:opacity .6s ease .8s, transform .5s cubic-bezier(.34,1.4,.64,1) .8s;
+    }
+    .ticker-wrap.in { opacity:1; transform:scaleY(1); }
+    .ticker-track {
+      display:flex; align-items:center; height:100%;
+      white-space:nowrap;
+      animation:tickerScroll 22s linear infinite;
+    }
+    @keyframes tickerScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+    .ticker-item {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:0 28px; font-size:10px; font-weight:300;
+      letter-spacing:2px; color:rgba(200,168,75,.55);
+    }
+    .ticker-dot {
+      width:4px; height:4px; border-radius:50%;
+      background:var(--gold); opacity:.5;
+    }
+    .ticker-live {
+      display:inline-flex; align-items:center; gap:5px;
+      color:var(--gold-soft); font-weight:700; font-size:9px; letter-spacing:2px;
+    }
+    .ticker-live-dot {
+      width:5px; height:5px; border-radius:50%; background:#E2C87A;
+      animation:livePulse 1.2s ease-in-out infinite;
+    }
+    @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.7)} }
+
+    /* ════════════════════════════════════════
+       JUXTAPOSE
+    ════════════════════════════════════════ */
+    .juxt-wrap {
+      flex:0 0 48%; position:relative; overflow:visible;
+      perspective:700px; perspective-origin:50% 50%;
+      filter:drop-shadow(0px 0px 0px rgba(0,0,0,0));
+      transition:filter .12s ease;
+    }
+    .juxt-inner {
+      width:100%; height:100%; position:relative;
+      transform-style:preserve-3d; will-change:transform;
+    }
+    .juxt-wrap iframe {
+      width:110%; height:110%; margin:-5%;
+      border:none; display:block; pointer-events:auto;
+    }
+    .juxt-glare {
+      position:absolute; inset:0; pointer-events:none; z-index:50;
+      opacity:0; mix-blend-mode:screen; transition:opacity .15s ease;
+    }
+    .juxt-inner:not(.idle) .juxt-glare { opacity:1; }
+    .juxt-border {
+      position:absolute; inset:0; z-index:49; pointer-events:none;
+      box-shadow:inset 0 0 0 1px rgba(200,168,75,0); transition:box-shadow .3s ease;
+    }
+    .juxt-inner:not(.idle) .juxt-border {
+      box-shadow:inset 0 0 0 1.5px rgba(200,168,75,.3),inset 0 0 40px rgba(200,168,75,.06);
+    }
+    .juxt-edge-r {
+      position:absolute; top:0; right:-4px; bottom:0; width:4px;
+      background:linear-gradient(90deg,rgba(200,168,75,.08),rgba(0,0,0,.6));
+      pointer-events:none; z-index:48; opacity:0; transition:opacity .3s;
+    }
+    .juxt-edge-b {
+      position:absolute; bottom:-4px; left:0; right:0; height:4px;
+      background:linear-gradient(180deg,rgba(200,168,75,.06),rgba(0,0,0,.7));
+      pointer-events:none; z-index:48; opacity:0; transition:opacity .3s;
+    }
+    .juxt-inner:not(.idle) .juxt-edge-r,
+    .juxt-inner:not(.idle) .juxt-edge-b { opacity:1; }
+    .scan-line {
+      position:absolute; left:0; right:0; height:2px;
+      background:linear-gradient(90deg,transparent,rgba(200,168,75,.35) 30%,rgba(230,200,120,.5) 50%,rgba(200,168,75,.35) 70%,transparent);
+      pointer-events:none; z-index:51; top:0;
+      animation:scanDown 7s ease-in-out infinite; opacity:0;
+    }
+    @keyframes scanDown { 0%{top:0%;opacity:0} 5%{opacity:1} 95%{opacity:.5} 100%{top:100%;opacity:0} }
+    .juxt-vignette {
+      position:absolute; inset:0; z-index:52; pointer-events:none;
+      background:radial-gradient(ellipse at 50% 50%,transparent 55%,rgba(8,6,4,.55) 100%);
+    }
+
+    /* ════════════════════════════════════════
+       WAVE
+    ════════════════════════════════════════ */
+    .wave { flex-shrink:0; height:48px; position:relative; z-index:20; margin-top:-2px; }
+    .wave svg { display:block; width:100%; height:100%; }
+
+    /* ════════════════════════════════════════
+       BOTTOM SECTION
+    ════════════════════════════════════════ */
+    .bottom-wrap { flex:1; position:relative; overflow:hidden; }
+
+    /* ✏️ 4 — الصورة السفلى */
+    .bottom-img {
+      width:100%; height:100%; object-fit:cover; display:block;
+      opacity:0; transform:scale(1.04);
+      transition:opacity 1s ease .5s, transform 1.2s ease .5s;
+    }
+    .bottom-img.in { opacity:1; transform:scale(1); }
+
+    .bottom-shadow-top {
+      position:absolute; top:0; left:0; right:0; height:55px;
+      background:linear-gradient(180deg,var(--ink2) 0%,transparent 100%);
+      pointer-events:none; z-index:5;
+    }
+    .bottom-shadow-bot {
+      position:absolute; bottom:0; left:0; right:0; height:70px;
+      background:linear-gradient(0deg,rgba(12,10,8,.92) 0%,transparent 100%);
+      pointer-events:none; z-index:5;
+    }
+
+    /* Aurora */
+    .aurora { position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+    .aurora::before, .aurora::after {
+      content:''; position:absolute; border-radius:50%; filter:blur(45px);
+      opacity:0; transition:opacity 1.5s ease 1s;
+    }
+    .aurora.in::before, .aurora.in::after { opacity:.2; }
+    .aurora::before {
+      width:280px; height:180px; left:-60px; top:20px;
+      background:radial-gradient(ellipse,rgba(200,168,75,1) 0%,transparent 70%);
+      animation:auroraA 8s ease-in-out infinite alternate;
+    }
+    .aurora::after {
+      width:220px; height:140px; right:-40px; bottom:10px;
+      background:radial-gradient(ellipse,rgba(180,120,40,1) 0%,transparent 70%);
+      animation:auroraB 10s ease-in-out infinite alternate;
+    }
+    @keyframes auroraA { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(40px,20px) scale(1.15)} }
+    @keyframes auroraB { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(-30px,-15px) scale(1.2)} }
+
+    /* ════════════════════════════════════════
+       [إضافة 3] CORNER MARKS — علامات الزوايا
+       مستوحاة من viewfinder كاميرا آبل
+       وواجهات Sci-Fi التقنية الفاخرة
+    ════════════════════════════════════════ */
+    .corner {
+      position:absolute; width:14px; height:14px; z-index:60; pointer-events:none;
+      opacity:0; transition:opacity .8s ease;
+    }
+    .corner.in { opacity:1; }
+    .corner::before, .corner::after {
+      content:''; position:absolute; background:var(--gold); border-radius:1px;
+    }
+    /* خط أفقي */
+    .corner::before { width:100%; height:1px; top:0; left:0; }
+    /* خط عمودي */
+    .corner::after  { width:1px; height:100%; top:0; left:0; }
+
+    /* الزوايا الأربع */
+    .corner-tl { top:8px; left:8px; }
+    .corner-tr { top:8px; right:8px; transform:scaleX(-1); }
+    .corner-bl { bottom:8px; left:8px; transform:scaleY(-1); }
+    .corner-br { bottom:8px; right:8px; transform:scale(-1); }
+
+    /* ════════════════════════════════════════
+       [إضافة 4] HAPTIC RIPPLE — موجة لمس
+       عند كل لمسة للشاشة تنفجر موجة دائرية
+       ذهبية شفافة — مستوحاة من iOS haptic feedback
+       لكن بصرية وليست اهتزازية
+    ════════════════════════════════════════ */
+    .ripple {
+      position:fixed; border-radius:50%; pointer-events:none; z-index:9000;
+      transform:translate(-50%,-50%) scale(0);
+      border:1px solid rgba(200,168,75,.6);
+      background:radial-gradient(circle,rgba(200,168,75,.12) 0%,transparent 70%);
+      animation:rippleOut .7s cubic-bezier(.2,.8,.4,1) forwards;
+    }
+    @keyframes rippleOut {
+      0%  { transform:translate(-50%,-50%) scale(0);   opacity:1; }
+      60% { opacity:.5; }
+      100%{ transform:translate(-50%,-50%) scale(1);   opacity:0; }
+    }
+
+    /* ════════════════════════════════════════
+       [إضافة 5] NOISE TEXTURE OVERLAY
+       طبقة ضجيج فيلمية دقيقة فوق كل شيء
+       تضيف عمقاً وجمالاً عضوياً — نفس ما
+       تستخدمه Apple في خلفيات macOS Sonoma
+    ════════════════════════════════════════ */
+    .noise {
+      position:fixed; inset:-50%; z-index:9998; pointer-events:none;
+      width:200%; height:200%;
+      opacity:.028;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:180px 180px;
+      animation:noiseShift 0.1s steps(1) infinite;
+    }
+    @keyframes noiseShift {
+      0%  { transform:translate(0,0); }
+      20% { transform:translate(-3%,-2%); }
+      40% { transform:translate(2%,-3%); }
+      60% { transform:translate(-2%,3%); }
+      80% { transform:translate(3%,2%); }
+      100%{ transform:translate(0,0); }
+    }
+
+    /* ════════════════════════════════════════
+       جزيئات ذهبية
+    ════════════════════════════════════════ */
+    .particles-canvas {
+      position:absolute; inset:0; pointer-events:none; z-index:3; opacity:.5;
+    }
+
+    /* ════════════════════════════════════════
+       FOOTER
+    ════════════════════════════════════════ */
+    .ftr {
+      flex-shrink:0; position:relative; z-index:200;
+      opacity:0; transform:translateY(12px);
+      transition:opacity .7s ease .6s, transform .7s cubic-bezier(.34,1.4,.64,1) .6s;
+    }
+    .ftr.in { opacity:1; transform:none; }
+    .ftr-line {
+      height:1px; margin:0 28px;
+      background:linear-gradient(90deg,transparent,var(--gold) 25%,var(--gold-soft) 50%,var(--gold) 75%,transparent);
+      opacity:.28;
+    }
+    .ftr-bg {
+      padding:10px 20px calc(10px + env(safe-area-inset-bottom));
+      background:linear-gradient(0deg,rgba(12,10,8,.97) 0%,rgba(12,10,8,.6) 70%,transparent 100%);
+      display:flex; flex-direction:column; align-items:center; gap:5px;
+    }
+    .ftr-label { color:var(--cream); font-size:12px; font-weight:300; letter-spacing:1.5px; opacity:.55; }
+    .ftr-label span { color:var(--gold-soft); opacity:1; font-weight:500; }
+    .ftr-swipe {
+      display:flex; align-items:center; gap:8px;
+      color:rgba(200,168,75,.45); font-size:11px; letter-spacing:2px; font-weight:300;
+    }
+    .ftr-line-s { width:20px; height:1px; background:linear-gradient(90deg,transparent,var(--gold)); opacity:.4; }
+    .ftr-line-s.rev { background:linear-gradient(90deg,var(--gold),transparent); }
+    .ftr-arr { animation:nudge 2s ease-in-out infinite; display:inline-block; }
+    .ftr-arr.flip { animation:nudgeR 2s ease-in-out infinite; display:inline-block; }
+    @keyframes nudge  { 0%,100%{transform:translateX(0)} 45%{transform:translateX(-5px)} 65%{transform:translateX(2px)} }
+    @keyframes nudgeR { 0%,100%{transform:scaleX(-1) translateX(0)} 45%{transform:scaleX(-1) translateX(-5px)} 65%{transform:scaleX(-1) translateX(2px)} }
+  </style>
+</head>
+<body>
+
+<!-- [إضافة 5] Noise — يغطي كل شيء بضجيج فيلمي دقيق -->
+<div class="noise"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <!-- ✏️ 2 — رابط اللوجو PNG هنا -->
+  <img class="ld-logo" src="https://i.postimg.cc/c40v80MB/570297858-17898283404299437-1306561669611533952-n.jpg" alt="">
+  <div class="ld-rings"><span></span><span></span><span></span></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+    <div class="ld-bar-wrap"><div class="ld-bar" id="bar"></div></div>
+    <span class="ld-pct" id="pct">0%</span>
+  </div>
+</div>
+
+<!-- PAGE -->
+<div id="page">
+
+  <!-- [إضافة 1] Ambient orbs — تتنفس خلف كل شيء -->
+  <div class="ambient-bg">
+    <div class="ambient-orb ambient-orb-1" id="orb1"></div>
+    <div class="ambient-orb ambient-orb-2" id="orb2"></div>
+    <div class="ambient-orb ambient-orb-3" id="orb3"></div>
+  </div>
+
+  <!-- [إضافة 3] Corner marks — زوايا الـ viewfinder -->
+  <div class="corner corner-tl" id="ctlEl"></div>
+  <div class="corner corner-tr" id="ctrEl"></div>
+  <div class="corner corner-bl" id="cblEl"></div>
+  <div class="corner corner-br" id="cbrEl"></div>
+
+  <!-- HEADER -->
+  <header class="hdr" id="hdr">
+    <!-- ✏️ 2 — رابط اللوجو PNG هنا -->
+    <img class="hdr-logo" src="https://i.postimg.cc/c40v80MB/570297858-17898283404299437-1306561669611533952-n.jpg" alt="Logo">
+  </header>
+  <div class="gold-line"></div>
+
+  <!-- [إضافة 2] Live Ticker -->
+  <div class="ticker-wrap" id="ticker">
+    <div class="ticker-track" id="tickerTrack"></div>
+  </div>
+
+  <!-- JUXTAPOSE -->
+  <div class="juxt-wrap" id="juxtWrap">
+    <div class="juxt-inner idle" id="juxtInner">
+      <!-- ✏️ 3 — رابط Juxtapose هنا -->
+      <iframe src="https://cdn.knightlab.com/libs/juxtapose/latest/embed/index.html?uid=5330875e-6eee-11f1-ba1b-0e6f42328d7d"
+              loading="eager" allowfullscreen title="مقارنة" id="juxtFrame"></iframe>
+      <div class="juxt-glare"    id="juxtGlare"></div>
+      <div class="juxt-edge-r"   id="edgeR"></div>
+      <div class="juxt-edge-b"   id="edgeB"></div>
+      <div class="scan-line"></div>
+      <div class="juxt-vignette"></div>
+      <div class="juxt-border"></div>
+    </div>
+  </div>
+
+  <!-- WAVE -->
+  <div class="wave">
+    <svg viewBox="0 0 390 48" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wg" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"  stop-color="#0C0A08"/>
+          <stop offset="50%" stop-color="#1C1710"/>
+          <stop offset="100%" stop-color="#0C0A08"/>
+        </linearGradient>
+        <linearGradient id="gl" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stop-color="transparent"/>
+          <stop offset="30%"  stop-color="#C8A84B"/>
+          <stop offset="50%"  stop-color="#E2C87A"/>
+          <stop offset="70%"  stop-color="#C8A84B"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,0 C90,38 180,7 260,27 C320,44 365,11 390,20 L390,48 L0,48 Z" fill="url(#wg)"/>
+      <path d="M0,12 C80,42 170,9 255,30 C320,48 368,16 390,25 L390,48 L0,48 Z" fill="#0C0A08" opacity=".9"/>
+      <path d="M0,12 C80,42 170,9 255,30 C320,48 368,16 390,25"
+            fill="none" stroke="url(#gl)" stroke-width="1" opacity=".4"/>
+    </svg>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom-wrap">
+    <div class="aurora" id="aurora"></div>
+    <canvas class="particles-canvas" id="particles"></canvas>
+    <!-- ✏️ 4 — رابط الصورة السفلى هنا -->
+    <img class="bottom-img" id="bottomImg" src="https://i.postimg.cc/g0ZzTTHm/1233wv8.png" alt="">
+    <div class="bottom-shadow-top"></div>
+    <div class="bottom-shadow-bot"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="ftr" id="ftr">
+    <div class="ftr-line"></div>
+    <div class="ftr-bg">
+      <div class="ftr-label">
+        <span>صورة حقيقية</span> · <span>صورة افتراضية</span>
+      </div>
+      <div class="ftr-swipe">
+        <div class="ftr-line-s rev"></div>
+        <span class="ftr-arr">☜</span>
+        <span>اسحب للمقارنة</span>
+        <span class="ftr-arr flip">☜</span>
+        <div class="ftr-line-s"></div>
+      </div>
+    </div>
+  </footer>
+
+</div><!-- end #page -->
+
+<script>
+(function(){
+
+  /* ══ TICKER CONTENT ══ */
+  const TICKER_ITEMS = [
+    'اكتشف الفرق', 'صورة حقيقية · صورة افتراضية',
+    'اسحب للمقارنة', 'تصوير احترافي', 'جودة استثنائية',
+    'اكتشف الفرق', 'صورة حقيقية · صورة افتراضية',
+    'اسحب للمقارنة', 'تصوير احترافي', 'جودة استثنائية',
+  ];
+
+  const track = document.getElementById('tickerTrack');
+  // نكرر مرتين لضمان اللانهائية
+  [...TICKER_ITEMS, ...TICKER_ITEMS].forEach((txt, i) => {
+    const el = document.createElement('span');
+    el.className = 'ticker-item';
+    if (i === 0 || i === TICKER_ITEMS.length) {
+      el.innerHTML = `<span class="ticker-live"><span class="ticker-live-dot"></span>LIVE</span><span class="ticker-dot"></span>${txt}`;
+    } else {
+      el.innerHTML = `<span class="ticker-dot"></span>${txt}`;
+    }
+    track.appendChild(el);
+  });
+
+  /* ══ LOADER ══ */
+  const bar       = document.getElementById('bar');
+  const pct       = document.getElementById('pct');
+  const loader    = document.getElementById('loader');
+  const page      = document.getElementById('page');
+  const hdr       = document.getElementById('hdr');
+  const ftr       = document.getElementById('ftr');
+  const ticker    = document.getElementById('ticker');
+  const juxtFrame = document.getElementById('juxtFrame');
+  const bottomImg = document.getElementById('bottomImg');
+  const aurora    = document.getElementById('aurora');
+  const orbs      = [document.getElementById('orb1'), document.getElementById('orb2'), document.getElementById('orb3')];
+  const corners   = ['ctlEl','ctrEl','cblEl','cbrEl'].map(id => document.getElementById(id));
+
+  let p = 0, done = false;
+  const t = setInterval(() => {
+    if (done) return;
+    const step = p < 60 ? 2.8 : p < 82 ? 1.0 : 0.15;
+    p = Math.min(p + step, 88);
+    bar.style.width = p + '%';
+    pct.textContent = Math.round(p) + '%';
+  }, 70);
+
+  function reveal() {
+    if (done) return;
+    done = true; clearInterval(t);
+    let v = p;
+    const rush = setInterval(() => {
+      v = Math.min(v + 5, 100);
+      bar.style.width = v + '%';
+      pct.textContent = Math.round(v) + '%';
+      if (v >= 100) {
+        clearInterval(rush);
+        setTimeout(() => {
+          loader.classList.add('out');
+          page.classList.add('in');
+          hdr.classList.add('in');
+          ftr.classList.add('in');
+          ticker.classList.add('in');
+          // الزوايا تظهر بتتابع
+          corners.forEach((c, i) => setTimeout(() => c.classList.add('in'), 400 + i * 120));
+          // الـ orbs
+          orbs.forEach(o => o.classList.add('in'));
+          setTimeout(() => {
+            bottomImg.classList.add('in');
+            aurora.classList.add('in');
+            initParallax();
+            initParticles();
+          }, 500);
+        }, 200);
+      }
+    }, 16);
+  }
+
+  juxtFrame.addEventListener('load', reveal);
+  setTimeout(reveal, 9000);
+
+  /* ══ [إضافة 4] HAPTIC RIPPLE ══ */
+  document.addEventListener('touchstart', e => {
+    Array.from(e.touches).forEach(touch => spawnRipple(touch.clientX, touch.clientY));
+  }, { passive: true });
+  document.addEventListener('mousedown', e => spawnRipple(e.clientX, e.clientY));
+
+  function spawnRipple(x, y) {
+    const size = 90;
+    const el   = document.createElement('div');
+    el.className = 'ripple';
+    el.style.cssText = `left:${x}px;top:${y}px;width:${size}px;height:${size}px`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+  }
+
+  /* ══ PARALLAX ENGINE ══ */
+  function initParallax() {
+    const wrap  = document.getElementById('juxtWrap');
+    const inner = document.getElementById('juxtInner');
+    const glare = document.getElementById('juxtGlare');
+    const edgeR = document.getElementById('edgeR');
+    const edgeB = document.getElementById('edgeB');
+
+    const MAX_TILT  = 5;   // أخف وأكثر واقعية
+    const GLARE_MAX = 0.15;
+    let tX=0, tY=0, cX=0, cY=0, vX=0, vY=0;
+    // Spring أناعم — يشبه الجاذبية الحقيقية
+    const STIFFNESS=0.05, DAMPING=0.80;
+    let rafId=null, idleTimer=null;
+    // معايرة الجيروسكوب — نحفظ القيمة الأولى كنقطة صفر
+    let gyroBaseB=null, gyroBaseG=null, gyroSamples=[];
+
+    function applyTransform(rx, ry) {
+      inner.style.transform =
+        `perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(12px) scale(1.01)`;
+      const angle  = Math.atan2(ry,-rx)*57.3+90;
+      const intens = Math.sqrt(rx*rx+ry*ry)/MAX_TILT*GLARE_MAX;
+      glare.style.background =
+        `linear-gradient(${angle}deg,rgba(255,255,255,${(intens*1.1).toFixed(3)}) 0%,rgba(255,255,255,${(intens*.3).toFixed(3)}) 35%,transparent 65%,rgba(0,0,0,${(intens*.5).toFixed(3)}) 100%)`;
+      const sX=ry*2.5, sY=-rx*2.5, blur=18+Math.sqrt(rx*rx+ry*ry)*2;
+      const op=.25+Math.sqrt(rx*rx+ry*ry)/MAX_TILT*.35;
+      wrap.style.filter=`drop-shadow(${sX}px ${sY+blur*.4}px ${blur}px rgba(0,0,0,${op.toFixed(2)}))`;
+      edgeR.style.opacity=(Math.max(0,ry/MAX_TILT)*.8).toFixed(2);
+      edgeB.style.opacity=(Math.max(0,-rx/MAX_TILT)*.8).toFixed(2);
+    }
+
+    function springLoop() {
+      vX=(vX+(tX-cX)*STIFFNESS)*DAMPING;
+      vY=(vY+(tY-cY)*STIFFNESS)*DAMPING;
+      cX+=vX; cY+=vY;
+      applyTransform(cX,cY);
+      const moving=Math.abs(vX)>.001||Math.abs(vY)>.001||Math.abs(tX-cX)>.01||Math.abs(tY-cY)>.01;
+      if(moving){ rafId=requestAnimationFrame(springLoop); }
+      else { rafId=null; if(tX===0&&tY===0){wrap.style.filter='';inner.classList.add('idle');} }
+    }
+
+    function kick(){ if(!rafId) rafId=requestAnimationFrame(springLoop); }
+
+    function startActive(){ inner.classList.remove('idle'); clearTimeout(idleTimer); kick(); }
+    function stopActive(d=900){ clearTimeout(idleTimer); idleTimer=setTimeout(()=>{tX=0;tY=0;kick();},d); }
+
+    let gyroOn=false;
+    function onGyro(e){
+      if(e.beta==null||e.gamma==null) return;
+      gyroOn=true;
+
+      // أول 8 قراءات: نحسب خط الأساس (وضع الهاتف الحالي)
+      if(gyroSamples.length < 8){
+        gyroSamples.push({b:e.beta, g:e.gamma});
+        if(gyroSamples.length === 8){
+          gyroBaseB = gyroSamples.reduce((s,v)=>s+v.b,0)/8;
+          gyroBaseG = gyroSamples.reduce((s,v)=>s+v.g,0)/8;
+        }
+        return;
+      }
+
+      // الحركة النسبية من نقطة الصفر
+      const dB = e.beta  - gyroBaseB;   // إمالة أمام/خلف
+      const dG = e.gamma - gyroBaseG;   // إمالة يمين/يسار
+
+      // تحديد حساسية: 15 درجة حقيقية = MAX_TILT كامل
+      const rawX = Math.max(-1, Math.min(1, dB / 15));
+      const rawY = Math.max(-1, Math.min(1, dG / 15));
+
+      tX = -rawX * MAX_TILT;
+      tY =  rawY * MAX_TILT;
+      startActive(); stopActive(1600);
+    }
+    if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){
+      document.addEventListener('touchstart',function ask(){
+        DeviceOrientationEvent.requestPermission().then(s=>{if(s==='granted')window.addEventListener('deviceorientation',onGyro);}).catch(()=>{});
+        document.removeEventListener('touchstart',ask);
+      },{once:true});
+    } else { window.addEventListener('deviceorientation',onGyro); }
+
+    wrap.addEventListener('mousemove',e=>{
+      if(gyroOn) return;
+      const r=wrap.getBoundingClientRect();
+      tY=(e.clientX-r.left)/r.width-.5; tX=-((e.clientY-r.top)/r.height-.5);
+      tY*=MAX_TILT*2; tX*=MAX_TILT*2;
+      startActive(); stopActive(800);
+    });
+    wrap.addEventListener('mouseleave',()=>stopActive(200));
+
+    let tx0=0,ty0=0;
+    wrap.addEventListener('touchstart',e=>{if(gyroOn)return;tx0=e.touches[0].clientX;ty0=e.touches[0].clientY;startActive();},{passive:true});
+    wrap.addEventListener('touchmove',e=>{
+      if(gyroOn)return;
+      tY=(e.touches[0].clientX-tx0)/wrap.offsetWidth*MAX_TILT*3;
+      tX=-(e.touches[0].clientY-ty0)/wrap.offsetHeight*MAX_TILT*3;
+      startActive(); stopActive(800);
+    },{passive:true});
+    wrap.addEventListener('touchend',()=>stopActive(400));
+
+    kick();
+  }
+
+  /* ══ PARTICLES ══ */
+  function initParticles() {
+    const canvas=document.getElementById('particles');
+    const ctx=canvas.getContext('2d');
+    const PX=[];
+    function resize(){ canvas.width=canvas.offsetWidth||window.innerWidth; canvas.height=canvas.offsetHeight||200; }
+    resize(); window.addEventListener('resize',resize);
+    for(let i=0;i<26;i++) PX.push({
+      x:Math.random()*window.innerWidth, y:Math.random()*300,
+      r:Math.random()*1.4+.3,
+      vx:(Math.random()-.5)*.22, vy:-Math.random()*.35-.08,
+      a:Math.random(), da:(Math.random()-.5)*.007
+    });
+    (function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      PX.forEach(p=>{
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(200,168,75,${Math.max(0,p.a)})`; ctx.fill();
+        p.x+=p.vx; p.y+=p.vy; p.a+=p.da;
+        if(p.a>.7||p.a<0) p.da*=-1;
+        if(p.y<-5)             p.y=canvas.height+5;
+        if(p.x<-5)             p.x=canvas.width+5;
+        if(p.x>canvas.width+5) p.x=-5;
+      });
+      requestAnimationFrame(draw);
+    })();
+  }
+
+})();
+
+  /* ══════════════════════════════════════════
+     LIQUID GOLD TRAIL — أثر ذهبي سائل
+     مستوحى من Awwwards Agency Websites
+  ══════════════════════════════════════════ */
+  (function initTrail(){
+    const POOL_SIZE = 28;   // عدد القطرات
+    const pool = [];        // مجموعة العناصر المُعاد استخدامها
+    const trail = [];       // مواضع الإصبع الأخيرة
+
+    // نبني كل القطرات مسبقاً في الـ DOM (أداء أفضل)
+    for(let i=0; i<POOL_SIZE; i++){
+      const d = document.createElement('div');
+      d.style.cssText = `
+        position:fixed; border-radius:50%; pointer-events:none;
+        z-index:8999; opacity:0; transform:translate(-50%,-50%) scale(0);
+        background:radial-gradient(circle,
+          rgba(230,200,100,0.9) 0%,
+          rgba(200,168,75,0.5) 40%,
+          transparent 70%);
+        transition:opacity 0.05s, transform 0.05s;
+        will-change:transform,opacity;
+      `;
+      document.body.appendChild(d);
+      pool.push({ el:d, x:0, y:0, vx:0, vy:0, life:0, active:false, size:0 });
+    }
+
+    let poolIdx = 0;
+    let lastX = -999, lastY = -999;
+    let animating = false;
+
+    function spawnDrop(x, y) {
+      const dist = Math.hypot(x-lastX, y-lastY);
+      if(dist < 6) return;   // فقط عند تحرك كافٍ
+      lastX=x; lastY=y;
+
+      const d    = pool[poolIdx % POOL_SIZE];
+      poolIdx++;
+      const size = 10 + Math.random() * 14;  // حجم عشوائي
+
+      d.x    = x + (Math.random()-0.5)*8;
+      d.y    = y + (Math.random()-0.5)*8;
+      d.vx   = (Math.random()-0.5) * 1.2;
+      d.vy   = (Math.random()-0.5) * 1.2;
+      d.life = 1.0;
+      d.size = size;
+      d.active = true;
+      d.el.style.width  = size+'px';
+      d.el.style.height = size+'px';
+
+      if(!animating){ animating=true; requestAnimationFrame(updateTrail); }
+    }
+
+    function updateTrail() {
+      let anyActive = false;
+      pool.forEach(d => {
+        if(!d.active) return;
+        anyActive = true;
+        d.x   += d.vx;
+        d.y   += d.vy;
+        d.vx  *= 0.92;   // احتكاك
+        d.vy  *= 0.92;
+        d.life -= 0.045; // تلاشٍ
+
+        if(d.life <= 0){
+          d.active = false;
+          d.el.style.opacity   = '0';
+          d.el.style.transform = 'translate(-50%,-50%) scale(0)';
+          return;
+        }
+
+        const sc  = d.life * 0.9;
+        const op  = d.life * 0.75;
+        d.el.style.left      = d.x+'px';
+        d.el.style.top       = d.y+'px';
+        d.el.style.opacity   = op.toFixed(3);
+        d.el.style.transform = `translate(-50%,-50%) scale(${sc.toFixed(3)})`;
+        // لون يتغير من ذهبي فاتح → بني ذهبي مع التلاشي
+        const g = Math.round(168 + d.life * 50);
+        d.el.style.background =
+          `radial-gradient(circle, rgba(230,${g},80,${(d.life*.9).toFixed(2)}) 0%, rgba(160,110,30,${(d.life*.4).toFixed(2)}) 50%, transparent 70%)`;
+      });
+
+      if(anyActive){ requestAnimationFrame(updateTrail); }
+      else { animating=false; }
+    }
+
+    // لمس الشاشة
+    document.addEventListener('touchmove', e=>{
+      Array.from(e.touches).forEach(t => spawnDrop(t.clientX, t.clientY));
+    }, {passive:true});
+    document.addEventListener('touchstart', e=>{
+      Array.from(e.touches).forEach(t => spawnDrop(t.clientX, t.clientY));
+    }, {passive:true});
+
+    // ماوس (كمبيوتر)
+    document.addEventListener('mousemove', e => spawnDrop(e.clientX, e.clientY));
+  })();
+</script>
+</body>
+</html>
